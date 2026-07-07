@@ -1,0 +1,7 @@
+[16:57:48] [LOGIN_FAIL] [User: guest] [IP: ::1] Email: danyatmhmd646@gmail.com | IP: ::1 | Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36
+[16:59:10] [LOGIN_FAIL] [User: guest] [IP: ::1] Email: danyatmhmd646@gmail.com | IP: ::1 | Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36
+[16:59:49] [LOGIN_SUCCESS] [User: guest] [IP: ::1] Email: danyatmhmd646@gmail.com | Role: admin | Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36
+[17:04:08] [LOGIN_SUCCESS] [User: guest] [IP: ::1] Email: danyatmhmd646@gmail.com | Role: admin | Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36
+[18:26:03] [LOGIN_SUCCESS] [User: guest] [IP: ::1] Email: danyatmhmd646@gmail.com | Role: admin | Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36
+[22:27:06] [LOGIN_SUCCESS] [User: guest] [IP: ::1] Email: danyatmhmd646@gmail.com | Role: admin | Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36
+[22:28:23] [FILE_UPLOAD] [User: 1] [IP: ::1] File: Secure Programming.pdf | Size: 160960 | Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36

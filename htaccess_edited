@@ -1,0 +1,100 @@
+# ============================
+# SecureApp - قواعد الأمان (نسخة مصححة)
+# ============================
+RewriteEngine On
+
+# فرض HTTPS تلقائياً (يتم تخطي localhost)
+RewriteCond %{HTTPS} !on
+RewriteCond %{HTTP_HOST} !^(localhost|127\.0\.0\.1)$
+RewriteRule ^(.*)$ https://%{HTTP_HOST}/$1 [R=301,L]
+
+# ============================
+# حماية الملفات الحساسة (صياغة Apache 2.4)
+# ============================
+<FilesMatch "^(config\.php|functions\.php|install\.sql|composer\.json)$">
+    Require all denied
+</FilesMatch>
+
+<FilesMatch "^\.ht">
+    Require all denied
+</FilesMatch>
+
+# منع الوصول لمجلد .git بالكامل
+# (FilesMatch يطابق اسم الملف فقط لا المسار الكامل، لذلك لا يكفي وحده هنا)
+RewriteRule (^|/)\.git(/|$) - [F,L]
+
+# ============================
+# حماية مجلد رفع الملفات
+# ملاحظة: لا يمكن استخدام <Directory> داخل .htaccess
+# (يسبب خطأ 500 على كامل الموقع). البديل الصحيح عبر mod_rewrite:
+# ============================
+RewriteRule ^uploads/.*\.(php|php[0-9]|phtml|phar)$ - [F,L]
+
+<IfModule mod_headers.c>
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set X-Frame-Options "DENY"
+    Header always set X-XSS-Protection "1; mode=block"
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+    Header always set Permissions-Policy "geolocation=(), microphone=(), camera=()"
+
+    # Content Security Policy
+    Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; form-action 'self'"
+</IfModule>
+
+# ============================
+# منع هجمات SQL Injection / XSS (طبقة دفاع إضافية، ليست بديلاً عن
+# parameterized queries والتعقيم داخل الكود نفسه)
+# ============================
+RewriteCond %{QUERY_STRING} (<|%3C).*script.*(>|%3E) [NC,OR]
+RewriteCond %{QUERY_STRING} GLOBALS(=|\[|%[0-9A-Z]{0,2}) [OR]
+RewriteCond %{QUERY_STRING} _REQUEST(=|\[|%[0-9A-Z]{0,2}) [OR]
+RewriteCond %{QUERY_STRING} (union.*select|insert.*into|delete.*from|drop.*table|update.*set|create.*table) [NC]
+RewriteRule ^ - [F,L]
+
+# ============================
+# منع هجمات Command Injection
+# (تم تعديل النمط ليتطلب شكل استدعاء دالة، لتقليل الحجب الخاطئ
+# لقيم بريئة تحتوي كلمات مثل "command" أو "curl" كنص عادي)
+# ============================
+RewriteCond %{QUERY_STRING} (exec|system|passthru|shell_exec|eval|base64_decode)\s*\( [NC,OR]
+RewriteCond %{QUERY_STRING} (^|&)(cmd|wget|curl)= [NC]
+RewriteRule ^ - [F,L]
+
+# ============================
+# منع هجمات Path Traversal
+# ============================
+RewriteCond %{QUERY_STRING} (\.\./|\.\.\\|\.\.%2f|\.\.%5c) [NC]
+RewriteRule ^ - [F,L]
+
+# ============================
+# حماية من Hotlinking
+# !! غيّر yourdomain.com بنطاقك الحقيقي قبل النشر، وإلا ستُحجب
+# صورك على موقعك نفسه !!
+# ============================
+RewriteCond %{HTTP_REFERER} !^$
+RewriteCond %{HTTP_REFERER} !^https?://(localhost|127\.0\.0\.1) [NC]
+RewriteCond %{HTTP_REFERER} !^https?://([a-z0-9-]+\.)*yourdomain\.com [NC]
+RewriteRule \.(jpg|jpeg|png|gif|pdf)$ - [F]
+
+# ============================
+# منع عرض المجلدات
+# ============================
+Options -Indexes
+
+<IfModule mod_autoindex.c>
+    IndexIgnore *
+</IfModule>
+
+# ============================
+# ترميز الموارد
+# ============================
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/css text/javascript application/javascript application/json image/svg+xml
+</IfModule>
+
+# ============================
+# خطأ 403/404/500 مخصص
+# ============================
+ErrorDocument 403 /Secure/index.php
+ErrorDocument 404 /Secure/index.php
+ErrorDocument 500 /Secure/index.php

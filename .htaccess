@@ -1,0 +1,115 @@
+# ============================
+# SecureApp - قواعد الأمان
+# ============================
+
+# تفعيل محرك إعادة الكتابة
+RewriteEngine On
+
+# فرض HTTPS تلقائياً (يتم تخطي localhost)
+RewriteCond %{HTTPS} !on
+RewriteCond %{HTTP_HOST} !^(localhost|127\.0\.0\.1)$
+RewriteRule ^(.*)$ https://%{HTTP_HOST}/$1 [R=301,L]
+
+# ============================
+# حماية الملفات الحساسة
+# ============================
+
+# منع الوصول إلى ملفات الإعدادات
+<FilesMatch "^(config\.php|functions\.php|install\.sql|composer\.json|\.git)">
+    Order Allow,Deny
+    Deny from all
+</FilesMatch>
+
+# منع الوصول إلى ملفات htaccess
+<FilesMatch "^\.ht">
+    Order Allow,Deny
+    Deny from all
+</FilesMatch>
+
+# ============================
+# حماية مجلد رفع الملفات
+# ============================
+
+<IfModule mod_headers.c>
+    # منع تنفيذ PHP داخل مجلد uploads
+    <Directory "uploads">
+        php_flag engine off
+    </Directory>
+    
+    # headers أمان
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set X-Frame-Options "DENY"
+    Header always set X-XSS-Protection "1; mode=block"
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+    Header always set Permissions-Policy "geolocation=(), microphone=(), camera=()"
+    
+    # Content Security Policy
+    Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; form-action 'self'"
+</IfModule>
+
+# ============================
+# منع هجمات SQL Injection
+# ============================
+
+# منع بعض الأنماط الضارة في الـ Query String
+RewriteCond %{QUERY_STRING} (\<|%3C).*script.*(\>|%3E) [NC,OR]
+RewriteCond %{QUERY_STRING} GLOBALS(=|\[|\%[0-9A-Z]{0,2}) [OR]
+RewriteCond %{QUERY_STRING} _REQUEST(=|\[|\%[0-9A-Z]{0,2})
+RewriteRule ^(.*)$ index.php [F,L]
+
+# منع محاولات SQL Injection
+RewriteCond %{QUERY_STRING} (union.*select|insert.*into|delete.*from|drop.*table|update.*set|create.*table) [NC]
+RewriteRule ^(.*)$ index.php [F,L]
+
+# ============================
+# منع هجمات Command Injection
+# ============================
+
+RewriteCond %{QUERY_STRING} (exec|system|passthru|shell_exec|eval|base64_decode|cmd|wget|curl).* [NC]
+RewriteRule ^(.*)$ index.php [F,L]
+
+# ============================
+# منع هجمات Path Traversal
+# ============================
+
+RewriteCond %{QUERY_STRING} (\.\./|\.\.\\|\.\.%2f|\.\.%5c) [NC]
+RewriteRule ^(.*)$ index.php [F,L]
+
+# ============================
+# حماية من Hotlinking
+# ============================
+
+RewriteCond %{HTTP_REFERER} !^$
+RewriteCond %{HTTP_REFERER} !^https?://(localhost|127\.0\.0\.1) [NC]
+RewriteCond %{HTTP_REFERER} !^https?://([a-z0-9-]+\.)*yourdomain\.com [NC]
+RewriteRule \.(jpg|jpeg|png|gif|pdf)$ - [F]
+
+# ============================
+# منع عرض مجلدات
+# ============================
+
+Options -Indexes
+
+# ============================
+# ترميز الموارد
+# ============================
+
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/css text/javascript application/javascript application/json image/svg+xml
+</IfModule>
+
+# ============================
+# صلاحيات الملفات الافتراضية
+# ============================
+
+<IfModule mod_autoindex.c>
+    IndexIgnore *
+</IfModule>
+
+# ============================
+# خطأ 403 مخصص
+# ============================
+
+ErrorDocument 403 /Secure/index.php
+ErrorDocument 404 /Secure/index.php
+ErrorDocument 500 /Secure/index.php

@@ -1,0 +1,9 @@
+# منع الوصول المباشر إلى الملفات المرفوعة
+Order Allow,Deny
+Deny from all
+
+# منع تشغيل PHP
+php_flag engine off
+
+# منع عرض محتويات المجلد
+Options -Indexes

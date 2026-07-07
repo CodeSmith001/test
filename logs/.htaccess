@@ -1,0 +1,5 @@
+# منع الوصول لملفات السجلات
+Order Allow,Deny
+Deny from all
+
+Options -Indexes
